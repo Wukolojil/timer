@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0c0c0c">
 <title>Sayaç</title>
 <style>
 /* ── RESET ── */
@@ -280,6 +282,22 @@ body::before{content:'';position:fixed;inset:0;z-index:3;
   .lap-item{padding:5px 8px}
   #settPanel{width:min(230px,90vw)}
 }
+
+/* ── FULLSCREEN BTN ── */
+#fsBtn{
+  position:fixed;bottom:clamp(10px,2vw,20px);right:clamp(10px,2vw,20px);
+  z-index:50;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:8px 11px;
+  font-family:inherit;font-size:11px;
+  color:var(--dim);cursor:pointer;
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  transition:all .2s;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+#fsBtn:hover,#fsBtn:active{color:var(--accent);border-color:var(--adim)}
+/* hide on devices that don't support fullscreen */
+@media(display-mode:fullscreen),(display-mode:standalone){#fsBtn{display:none}}
 </style>
 </head>
 <body>
@@ -288,6 +306,7 @@ body::before{content:'';position:fixed;inset:0;z-index:3;
 <img id="bgImg" alt="">
 <video id="bgVid" autoplay loop muted playsinline></video>
 <div id="bgOverlay"></div>
+<button id="fsBtn" onclick="toggleFS()" title="Tam Ekran">⛶</button>
 
 <!-- LAPS -->
 <div id="lapsPanel"></div>
@@ -768,6 +787,40 @@ calcCardSize();
 applyTheme(0);
 setOverlay(45);
 render();
+
+// ─────────────────────────────────────────────────────────────────
+// FULLSCREEN
+// ─────────────────────────────────────────────────────────────────
+function toggleFS() {
+  const btn = document.getElementById('fsBtn');
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    btn.textContent = '⛶';
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  }
+}
+
+document.addEventListener('fullscreenchange', updateFsBtn);
+document.addEventListener('webkitfullscreenchange', updateFsBtn);
+function updateFsBtn() {
+  const btn = document.getElementById('fsBtn');
+  const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+  btn.textContent = isFs ? '✕' : '⛶';
+  btn.title = isFs ? 'Çık' : 'Tam Ekran';
+}
+
+// keyboard shortcut F11 / F
+document.addEventListener('keydown', e => {
+  if (e.key === 'F11' || (e.key === 'f' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT')) {
+    e.preventDefault();
+    toggleFS();
+  }
+});
+
 </script>
 </body>
 </html>
